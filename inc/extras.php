@@ -1,710 +1,641 @@
 <?php
 /**
- * Custom functions that act independently of the theme templates.
- *
- * Eventually, some of the functionality here could be replaced by core features.
- *
- * @package Shapely
+ *	Adds custom classes to the array of body classes.
  */
+if(!function_exists('illdy_body_classes')) {
+    add_filter( 'body_class', 'illdy_body_classes' );
+    function illdy_body_classes( $classes ) {
+        // Adds a class of group-blog to blogs with more than 1 published author.
+        if ( is_multi_author() ) {
+            $classes[] = 'group-blog';
+        }
 
-/**
- * Adds custom classes to the array of body classes.
- *
- * @param array $classes Classes for the body element.
- *
- * @return array
- */
-function shapely_body_classes( $classes ) {
-	// Adds a class of group-blog to blogs with more than 1 published author.
-	if ( is_multi_author() ) {
-		$classes[] = 'group-blog';
-	}
-
-	// Adds a class of hfeed to non-singular pages.
-	if ( ! is_singular() ) {
-		$classes[] = 'hfeed';
-	}
-
-	if ( get_theme_mod( 'shapely_sidebar_position' ) == "pull-right" ) {
-		$classes[] = 'has-sidebar-left';
-	} else if ( get_theme_mod( 'shapely_sidebar_position' ) == "no-sidebar" ) {
-		$classes[] = 'has-no-sidebar';
-	} else if ( get_theme_mod( 'shapely_sidebar_position' ) == "full-width" ) {
-		$classes[] = 'has-full-width';
-	} else {
-		$classes[] = 'has-sidebar-right';
-	}
-
-	return $classes;
-}
-
-add_filter( 'body_class', 'shapely_body_classes' );
-
-/**
- * Get our wp_nav_menu() fallback, wp_page_menu(), to show a home link.
- *
- * @param array $args Configuration arguments.
- *
- * @return array
- */
-function shapely_page_menu_args( $args ) {
-	$args['show_home'] = true;
-
-	return $args;
-}
-
-add_filter( 'wp_page_menu_args', 'shapely_page_menu_args' );
-
-// Mark Posts/Pages as Untiled when no title is used
-add_filter( 'the_title', 'shapely_title' );
-
-function shapely_title( $title ) {
-	if ( $title == '' ) {
-		return esc_html__( 'Untitled', 'shapely' );
-	} else {
-		return $title;
-	}
+        // Adds a class of hfeed to non-singular pages.
+        if ( ! is_singular() ) {
+            $classes[] = 'hfeed';
+        }
+        return $classes;
+    } 
 }
 
 /**
- * Password protected post form using Boostrap classes
+ *  Comment
  */
-add_filter( 'the_password_form', 'shapely_custom_password_form' );
-
-function shapely_custom_password_form() {
-	global $post;
-	$label = 'pwbox-' . ( empty( $post->ID ) ? rand() : $post->ID );
-	$o     = '<form class="protected-post-form" action="' . get_option( 'siteurl' ) . '/wp-login.php?action=postpass" method="post">
-  <div class="row">
-    <div class="col-lg-10">
-        <p>' . esc_html__( "This post is password protected. To view it please enter your password below:", 'shapely' ) . '</p>
-        <label for="' . esc_attr( $label ) . '">' . esc_html__( "Password:", 'shapely' ) . ' </label>
-      <div class="input-group">
-        <input class="form-control" value="' . esc_attr( get_search_query() ) . '" name="post_password" id="' . esc_attr( $label ) . '" type="password">
-        <span class="input-group-btn"><button type="submit" class="btn btn-default" name="submit" id="searchsubmit" value="' . esc_attr__( "Submit", 'shapely' ) . '">' . esc_html__( "Submit", 'shapely' ) . '</button>
-        </span>
-      </div>
-    </div>
-  </div>
-</form>';
-
-	return $o;
+if(!function_exists('illdy_comment')) {
+    function illdy_comment( $comment, $args, $depth ) {
+        $GLOBALS['comment'] = $comment;
+        switch ( $comment->comment_type ) :
+            case 'pingback' :
+            case 'trackback' :
+        ?>
+        <li class="post pingback">
+            <p><?php _e( 'Pingback:', 'illdy' ); ?> <?php comment_author_link(); ?><?php edit_comment_link( __( '(Edit)', 'illdy' ), ' ' ); ?></p>
+        <?php
+                break;
+            default :
+        ?>
+        <li <?php comment_class(); ?> id="li-comment-<?php comment_ID(); ?>">
+            <div id="comment-<?php comment_ID(); ?>">
+                <div class="row">
+                    <div class="col-sm-2 clearfix">
+                        <div class="comment-gravatar">
+                            <?php echo get_avatar( $comment, 84 ); ?>
+                        </div><!--/.comment-gravatar-->
+                    </div><!--/.col-sm-2-->
+                    <div class="col-sm-10">
+                        <?php printf( __( '%s', 'illdy' ), sprintf( '%s', get_comment_author_link() ) ); ?>
+                        <time class="comment-time" datetime="<?php printf( '%s-%s-%s', get_the_date( 'Y' ), get_the_date( 'm' ), get_the_date( 'd' ) ); ?>"><?php printf( __( '%1$s at %2$s', 'illdy' ), get_comment_date(), get_comment_time() ); ?></time>
+                        <div class="comment-entry markup-format">
+                            <?php comment_text(); ?>
+                            <?php
+                            if(  $comment->comment_approved == '0' ):
+                                _e( 'Your comment is awaiting moderation.', 'illdy' );
+                            endif;
+                            ?>
+                        </div><!--/.comment-entry.markup-format-->
+                        <?php comment_reply_link( array_merge( $args, array( 'depth' => $depth, 'max_depth' => $args['max_depth'] ) ) ); ?>
+                    </div><!--/.col-sm-10-->
+                </div><!--/.row-->
+            </div><!--/#comment-<?php comment_ID(); ?>.row-->
+        <?php
+                break;
+        endswitch;
+    }
 }
 
-// Add Bootstrap classes for table
-add_filter( 'the_content', 'shapely_add_custom_table_class' );
-function shapely_add_custom_table_class( $content ) {
-	return preg_replace( '/(<table) ?(([^>]*)class="([^"]*)")?/', '$1 $3 class="$4 table table-hover" ', $content );
-}
-
-if ( ! function_exists( 'shapely_header_menu' ) ) :
-	/**
-	 * Header menu (should you choose to use one)
-	 */
-	function shapely_header_menu() {
-		// display the WordPress Custom Menu if available
-		wp_nav_menu( array(
-			             'menu_id'         => 'menu',
-			             'theme_location'  => 'primary',
-			             'depth'           => 3,
-			             'container'       => 'div',
-			             'container_class' => 'collapse navbar-collapse navbar-ex1-collapse',
-			             'menu_class'      => 'menu',
-			             'fallback_cb'     => 'wp_bootstrap_navwalker::fallback',
-			             'walker'          => new wp_bootstrap_navwalker()
-		             ) );
-	} /* end header menu */
-endif;
 
 /**
- * function to show the footer info, copyright information
+ *  Move comment field to bottom
  */
-function shapely_footer_info() {
-	printf( esc_html__( 'Theme by %1$s Powered by %2$s', 'shapely' ), '<a href="https://colorlib.com/" target="_blank" title="Colorlib">Colorlib</a>', '<a href="http://wordpress.org/" target="_blank" title="WordPress.org">WordPress</a>' );
+if( !function_exists( 'illdy_move_comment_field_to_bottom' ) ) {
+    add_filter( 'comment_form_fields', 'illdy_move_comment_field_to_bottom' );
+    function illdy_move_comment_field_to_bottom( $fields ) {
+        $comment_field = $fields['comment'];
+        unset( $fields['comment'] );
+        $fields['comment'] = $comment_field;
+        return $fields;
+    }
 }
 
-
-if ( ! function_exists( 'shapely_get_theme_options' ) ) {
-	/**
-	 * Get information from Theme Options and add it into wp_head
-	 */
-	function shapely_get_theme_options() {
-
-		echo '<style type="text/css">';
-
-		if ( get_theme_mod( 'link_color' ) ) {
-			echo 'a {color:' . esc_attr( get_theme_mod( 'link_color' ) ) . '}';
-		}
-		if ( get_theme_mod( 'link_hover_color' ) ) {
-			echo 'a:hover, a:active, .post-title a:hover,
-        .woocommerce nav.woocommerce-pagination ul li a:focus, .woocommerce nav.woocommerce-pagination ul li a:hover,
-        .woocommerce nav.woocommerce-pagination ul li span.current  { color: ' . esc_attr( get_theme_mod( 'link_hover_color' ) ) . ';}';
-		}
-
-		if ( get_theme_mod( 'button_color' ) ) {
-			echo '.btn-filled, .btn-filled:visited, .woocommerce #respond input#submit.alt,
-          .woocommerce a.button.alt, .woocommerce button.button.alt,
-          .woocommerce input.button.alt, .woocommerce #respond input#submit,
-          .woocommerce a.button, .woocommerce button.button,
-          .woocommerce input.button { background:' . esc_attr( get_theme_mod( 'button_color' ) ) . ' !important; border: 2px solid' . esc_attr( get_theme_mod( 'button_color' ) ) . ' !important;}';
-		}
-		if ( get_theme_mod( 'button_hover_color' ) ) {
-			echo '.btn-filled:hover, .woocommerce #respond input#submit.alt:hover,
-          .woocommerce a.button.alt:hover, .woocommerce button.button.alt:hover,
-          .woocommerce input.button.alt:hover, .woocommerce #respond input#submit:hover,
-          .woocommerce a.button:hover, .woocommerce button.button:hover,
-          .woocommerce input.button:hover  { background: ' . esc_attr( get_theme_mod( 'button_hover_color' ) ) . ' !important; border: 2px solid' . esc_attr( get_theme_mod( 'button_hover_color' ) ) . ' !important;}';
-		}
-
-		if ( get_theme_mod( 'social_color' ) ) {
-			echo '.social-icons li a {color: ' . esc_attr( get_theme_mod( 'social_color' ) ) . ' !important ;}';
-		}
-
-		echo '</style>';
-	}
-}
-add_action( 'wp_head', 'shapely_get_theme_options', 10 );
 
 /**
- * Add Bootstrap thumbnail styling to images with captions
- * Use <figure> and <figcaption>
- *
- * @link http://justintadlock.com/archives/2011/07/01/captions-in-wordpress
+ *  Get image ID from Image URL
  */
-function shapely_caption( $output, $attr, $content ) {
-	if ( is_feed() ) {
-		return $output;
-	}
+if( !function_exists( 'illdy_get_image_id_from_image_url' ) ) {
+    function illdy_get_image_id_from_image_url( $image_url ) {
+        global $wpdb;
+        $attachment = $wpdb->get_col( $wpdb->prepare( "SELECT ID FROM $wpdb->posts WHERE guid='%s';", $image_url ) );
 
-	$defaults = array(
-		'id'      => 'shapely_caption_' . rand( 1, 192282 ),
-		'align'   => 'alignnone',
-		'width'   => '',
-		'caption' => ''
-	);
-
-	$attr = shortcode_atts( $defaults, $attr );
-
-	// If the width is less than 1 or there is no caption, return the content wrapped between the [caption] tags
-	if ( $attr['width'] < 1 || empty( $attr['caption'] ) ) {
-		return $content;
-	}
-
-	$output = '<figure id="' . esc_attr( $attr['id'] ) . '" class="thumbnail wp-caption ' . esc_attr( $attr['align'] ) . ' style="width: ' . ( esc_attr( $attr['width'] ) + 10 ) . 'px">';
-	$output .= do_shortcode( $content );
-	$output .= '<figcaption class="caption wp-caption-text">' . esc_html( $attr['caption'] ) . '</figcaption>';
-	$output .= '</figure>';
-
-	return $output;
+        if( $attachment ) {
+            return $attachment[0];
+        }
+    }
 }
-
-add_filter( 'img_caption_shortcode', 'shapely_caption', 10, 3 );
 
 /**
- * Adds the URL to the top level navigation menu item
+ *  Sections order
  */
-function shapely_add_top_level_menu_url( $atts, $item, $args ) {
-	if ( ! wp_is_mobile() && isset( $args->has_children ) && $args->has_children ) {
-		$atts['href'] = ! empty( $item->url ) ? esc_url( $item->url ) : '';
-	}
+if( !function_exists( 'illdy_sections_show' ) ) {
+    function illdy_sections_order( $section ) {
 
-	return $atts;
+        $controls = array(
+                'illdy_panel_about' => 'illdy_about_general_show',
+                'illdy_panel_projects' => 'illdy_projects_general_show',
+                'illdy_testimonials_general' => 'illdy_testimonials_general_show',
+                'illdy_panel_services' => 'illdy_services_general_show',
+                'illdy_latest_news_general' => 'illdy_latest_news_general_show',
+                'illdy_counter_general' => 'illdy_counter_general_show',
+                'illdy_panel_team' => 'illdy_team_general_show',
+                'illdy_contact_us' => 'illdy_contact_us_show',
+                'illdy_full_width' => 'illdy_full_width_general_show'
+            );
+
+        if ( array_key_exists( $section , $controls) ) {
+            return get_theme_mod( $controls[$section], 1 );
+        }else{
+            return true;
+        }
+
+    }
 }
 
-add_filter( 'nav_menu_link_attributes', 'shapely_add_top_level_menu_url', 99, 3 );
+if( !function_exists( 'illdy_sections' ) ) {
+    function illdy_sections() {
 
-/**
- * Makes the top level navigation menu item clickable
- */
-function shapely_make_top_level_menu_clickable() {
-	if ( ! wp_is_mobile() ) { ?>
-		<script type="text/javascript">
-			jQuery(document).ready(function ($) {
-				if ( $(window).width() >= 767 ) {
-					$('.navbar-nav > li.menu-item > a').click(function () {
-						window.location = $(this).attr('href');
-					});
-				}
-			});
-		</script>
-	<?php }
+        $templates = array(
+                'illdy_panel_about' => 'about',
+                'illdy_panel_projects' => 'projects',
+                'illdy_testimonials_general' => 'testimonials-widget',
+                'illdy_panel_services' => 'services',
+                'illdy_latest_news_general' => 'latest-news',
+                'illdy_counter_general' => 'counter',
+                'illdy_panel_team' => 'team',
+                'illdy_contact_us' => 'contact-us',
+                'illdy_full_width' => 'full-width'
+            );
+
+        $sections = illdy_get_sections_position();
+
+        foreach ( $sections as $s_id ) {
+            if ( illdy_sections_order($s_id) ) {
+                get_template_part( 'sections/front-page', $templates[$s_id] );
+            }
+        }
+
+    }
 }
 
-add_action( 'wp_footer', 'shapely_make_top_level_menu_clickable', 1 );
+function illdy_hex2rgb($hexColor,$opacity = 1) {
+  $shorthand = (strlen($hexColor) == 4);
 
-/*
- * Add Read More button to post archive
- */
-function shapely_excerpt_more( $more ) {
-	return '<div><a class="btn-filled btn" href="' . esc_url( get_the_permalink() ) . '" title="' . the_title_attribute( array( 'echo' => false ) ) . '">' . esc_html_x( 'Read More', 'Read More', 'shapely' ) . '</a></div>';
+  list($r, $g, $b) = $shorthand? sscanf($hexColor, "#%1s%1s%1s") : sscanf($hexColor, "#%2s%2s%2s");
+
+  return 'rgba( '.hexdec($shorthand? "$r$r" : $r).', '.hexdec($shorthand? "$g$g" : $g).', '.hexdec($shorthand? "$b$b" : $b).', '.$opacity.' )';
 }
 
-add_filter( 'excerpt_more', 'shapely_excerpt_more' );
+if ( !function_exists( 'illdy_jumbotron_css' ) ) {
+    function illdy_jumbotron_css(){
 
-/*
- * Pagination
- */
-if ( ! function_exists( 'shapely_pagination' ) ) {
+        $illdy_jumbotron_general_image = esc_url(get_theme_mod('illdy_jumbotron_general_image', esc_url( get_template_directory_uri() . '/layout/images/front-page/front-page-header.jpg' )));
+        $illdy_jumbotron_background_size = esc_html(get_theme_mod('illdy_jumbotron_background_size'));
+        $illdy_jumbotron_background_position_y = esc_html(get_theme_mod('illdy_jumbotron_background_position_y'));
+        $illdy_jumbotron_background_position_x = esc_html(get_theme_mod('illdy_jumbotron_background_position_x'));
+        $illdy_jumbotron_background_repeat = esc_html(get_theme_mod('illdy_jumbotron_background_repeat'));
+        $illdy_jumbotron_background_attachment = esc_html(get_theme_mod('illdy_jumbotron_background_attachment'));
+        $illdy_jumbotron_general_color = sanitize_hex_color(get_theme_mod('illdy_jumbotron_general_color'));
+        $illdy_jumbotron_first_border_color = sanitize_hex_color(get_theme_mod('illdy_jumbotron_first_button_background'));
+        $illdy_jumbotron_first_button_background = sanitize_hex_color(illdy_hex2rgb( $illdy_jumbotron_first_border_color, '.2' ));
+        $illdy_jumbotron_first_button_background_hover = sanitize_hex_color(illdy_hex2rgb( $illdy_jumbotron_first_border_color, '.1' ));
+        $illdy_jumbotron_second_button_background = sanitize_hex_color(get_theme_mod('illdy_jumbotron_second_button_background'));
+        $illdy_jumbotron_second_button_background_hover = sanitize_hex_color(get_theme_mod('illdy_jumbotron_second_button_background_hover'));
+        $illdy_jumbotron_title_color = sanitize_hex_color(get_theme_mod('illdy_jumbotron_title_color'));
+        $illdy_jumbotron_points_color = sanitize_hex_color(get_theme_mod('illdy_jumbotron_points_color'));
+        $illdy_jumbotron_descriptions_color = sanitize_hex_color(get_theme_mod('illdy_jumbotron_descriptions_color'));
+        $illdy_jumbotron_first_button_color = sanitize_hex_color(get_theme_mod('illdy_jumbotron_first_button_color'));
+        $illdy_jumbotron_right_button_color = sanitize_hex_color(get_theme_mod('illdy_jumbotron_right_button_color'));
 
-	function shapely_pagination() {
-		?>
-		<div class="text-center">
-			<nav class="pagination">
-				<?php
-				the_posts_pagination( array(
-					                      'mid_size'  => 2,
-					                      'prev_text' => '<icon class="fa fa-angle-left"></icon>',
-					                      'next_text' => '<icon class="fa fa-angle-right"></icon>',
-				                      ) ); ?>
-			</nav>
-		</div>
-		<?php
-	}
+        $css = '';
+        if ($illdy_jumbotron_general_image) {
+            $css .= '#header.header-front-page {background-image: url('.$illdy_jumbotron_general_image.') !important;}';
+        }else{
+            $css .= '#header.header-front-page {background-image: none !important;}';
+        }
+        if ( $illdy_jumbotron_background_position_y ) {
+            $css .= '#header.header-front-page {background-position-y: '.$illdy_jumbotron_background_position_y.';}';
+        }
+        if ( $illdy_jumbotron_background_position_x ) {
+            $css .= '#header.header-front-page {background-position-x: '.$illdy_jumbotron_background_position_x.';}';
+        }
+        if ($illdy_jumbotron_background_size) {
+            $css .= '#header.header-front-page {background-size: '.$illdy_jumbotron_background_size.' !important;}';
+        }
+        if ($illdy_jumbotron_background_repeat) {
+            $css .= '#header.header-front-page {background-repeat: repeat !important;}';
+        }
+        if ($illdy_jumbotron_background_attachment) {
+            $css .= '#header.header-front-page {background-attachment: scroll !important;}';
+        }
+        if ($illdy_jumbotron_general_color) {
+            $css .= '#header.header-front-page {background-color: '.$illdy_jumbotron_general_color.';}';
+        }
+        if ($illdy_jumbotron_first_button_background) {
+            $css .= '#header.header-front-page .bottom-header .header-button-one {background-color: '.$illdy_jumbotron_first_button_background.';}';
+        }
+        if ($illdy_jumbotron_first_button_background_hover) {
+            $css .= '#header.header-front-page .bottom-header .header-button-one:hover {background-color: '.$illdy_jumbotron_first_button_background_hover.';}';
+        }
+        if ($illdy_jumbotron_first_border_color) {
+            $css .= '#header.header-front-page .bottom-header .header-button-one {border-color: '.$illdy_jumbotron_first_border_color.';}';
+        }
+        if ($illdy_jumbotron_second_button_background) {
+            $css .= '#header.header-front-page .bottom-header .header-button-two {background-color: '.$illdy_jumbotron_second_button_background.';}';
+        }
+        if  ($illdy_jumbotron_second_button_background_hover) {
+            $css .= '#header.header-front-page .bottom-header .header-button-two:hover {background-color: '.$illdy_jumbotron_second_button_background_hover.';}';
+        }
+        if  ($illdy_jumbotron_title_color) {
+            $css .= '#header.header-front-page .bottom-header h1 {color: '.$illdy_jumbotron_title_color.';}';
+        }
+        if  ($illdy_jumbotron_points_color) {
+            $css .= '#header.header-front-page .bottom-header span.span-dot {color: '.$illdy_jumbotron_points_color.';}';
+        }
+        if  ($illdy_jumbotron_descriptions_color) {
+            $css .= '#header.header-front-page .bottom-header .section-description {color: '.$illdy_jumbotron_descriptions_color.';}';
+        }
+        if  ($illdy_jumbotron_first_button_color) {
+            $css .= '#header.header-front-page .bottom-header .header-button-one {color: '.$illdy_jumbotron_first_button_color.';}';
+        }
+        if  ($illdy_jumbotron_right_button_color) { 
+            $css .= '#header.header-front-page .bottom-header .header-button-two {color: '.$illdy_jumbotron_right_button_color.';}';
+        }
+
+        return $css;
+    }
 }
 
-/*
- * Search Widget
- */
-function shapely_search_form( $form ) {
-	$form = '<form role="search" method="get" id="searchform" class="search-form" action="' . esc_url( home_url( '/' ) ) . '" >
-    <label class="screen-reader-text" for="s">' . esc_html__( 'Search for:', 'shapely' ) . '</label>
-    <input type="text" placeholder="' . esc_html__( 'Type Here', 'shapely' ) . '" type="text" value="' . esc_attr( get_search_query() ) . '" name="s" id="s" />
-    <input type="submit" class="btn btn-fillded searchsubmit" id="searchsubmit" value="' . esc_attr__( 'Search', 'shapely' ) . '" />
+if ( !function_exists( 'illdy_latestnews_css' ) ) {
+    function illdy_latestnews_css(){
 
-    </form>';
+        $illdy_latest_news_title_color = sanitize_hex_color(get_theme_mod('illdy_latest_news_title_color'));
+        $illdy_latest_news_descriptions_color = sanitize_hex_color(get_theme_mod('illdy_latest_news_descriptions_color'));
+        $illdy_latest_news_general_color = sanitize_hex_color(get_theme_mod('illdy_latest_news_general_color'));
+        $illdy_latest_news_button_background = sanitize_hex_color(get_theme_mod('illdy_latest_news_button_background'));
+        $illdy_latest_news_button_background_hover = sanitize_hex_color(get_theme_mod('illdy_latest_news_button_background_hover'));
+        $illdy_latest_news_button_color = sanitize_hex_color(get_theme_mod('illdy_latest_news_button_color'));
+        $illdy_latest_news_post_bakground_color = sanitize_hex_color(get_theme_mod('illdy_latest_news_post_bakground_color'));
+        $illdy_latest_news_post_text_color = sanitize_hex_color(get_theme_mod('illdy_latest_news_post_text_color'));
+        $illdy_latest_news_post_text_hover_color = sanitize_hex_color(get_theme_mod('illdy_latest_news_post_text_hover_color'));
+        $illdy_latest_news_post_content_color = sanitize_hex_color(get_theme_mod('illdy_latest_news_post_content_color'));
+        $illdy_latest_news_post_button_color = sanitize_hex_color(get_theme_mod('illdy_latest_news_post_button_color'));
+        $illdy_latest_news_post_button_hover_color = sanitize_hex_color(get_theme_mod('illdy_latest_news_post_button_hover_color'));
+        $illdy_latest_news_general_image = esc_url(get_theme_mod('illdy_latest_news_general_image'));
+        $illdy_latest_news_background_size = esc_html(get_theme_mod('illdy_latest_news_background_size'));
+        $illdy_latest_news_background_repeat = esc_html(get_theme_mod('illdy_latest_news_background_repeat'));
+        $illdy_latest_news_background_attachment = esc_html(get_theme_mod('illdy_latest_news_background_attachment'));
+        $illdy_latest_news_background_position_y = esc_html(get_theme_mod('illdy_latest_news_background_position_y'));
+        $illdy_latest_news_background_position_x = esc_html(get_theme_mod('illdy_latest_news_background_position_x'));
 
-	return $form;
+        $css = '';
+        if ($illdy_latest_news_general_image) {
+            $css .= '#latest-news {background-image: url('.$illdy_latest_news_general_image.') !important;}';
+        }
+        if ( $illdy_latest_news_background_position_y ) {
+            $css .= '#latest-news {background-position-y: '.$illdy_latest_news_background_position_y.';}';
+        }
+        if ( $illdy_latest_news_background_position_x ) {
+            $css .= '#latest-news {background-position-x: '.$illdy_latest_news_background_position_x.';}';
+        }
+        if ($illdy_latest_news_background_size) {
+            $css .= '#latest-news {background-size: '.$illdy_latest_news_background_size.' !important;}';
+        }
+        if ($illdy_latest_news_background_repeat) {
+            $css .= '#latest-news {background-repeat: repeat !important;}';
+        }
+        if ($illdy_latest_news_background_attachment) {
+            $css .= '#latest-news {background-attachment: scroll !important;}';
+        }
+        if ($illdy_latest_news_general_color) {
+            $css .= '#latest-news {background-color: '.$illdy_latest_news_general_color.';}';
+        }
+        if ($illdy_latest_news_button_background) {
+            $css .= '#latest-news .latest-news-button {background-color: '.$illdy_latest_news_button_background.';}';
+        }
+        if ($illdy_latest_news_button_background_hover) {
+            $css .= '#latest-news .latest-news-button:hover {background-color: '.$illdy_latest_news_button_background_hover.';}';
+        }
+        if ($illdy_latest_news_button_color) {
+            $css .= '#latest-news .latest-news-button {color: '.$illdy_latest_news_button_color.';}';
+        }
+        if ($illdy_latest_news_post_bakground_color) {
+            $css .= '#latest-news .section-content .post {background-color: '.$illdy_latest_news_post_bakground_color.';}';
+        }
+        if ($illdy_latest_news_post_text_color) {
+            $css .= '#latest-news .section-content .post .post-title {color: '.$illdy_latest_news_post_text_color.';}';
+        }
+        if ($illdy_latest_news_post_text_hover_color) {
+            $css .= '#latest-news .section-content .post .post-title:hover {color: '.$illdy_latest_news_post_text_hover_color.';}';
+        }
+        if  ($illdy_latest_news_post_content_color) {
+            $css .= '#latest-news .section-content .post .post-entry {color: '.$illdy_latest_news_post_content_color.';}';
+        }
+        if  ($illdy_latest_news_post_button_color) {
+            $css .= '#latest-news .section-content .post .post-button {color: '.$illdy_latest_news_post_button_color.';}';
+        }
+        if  ($illdy_latest_news_post_button_hover_color) {
+            $css .= '#latest-news .section-content .post .post-button:hover {color: '.$illdy_latest_news_post_button_hover_color.';}';
+        }
+        if  ($illdy_latest_news_title_color) {
+            $css .= '#latest-news .section-header h3 {color: '.$illdy_latest_news_title_color.';}';
+        }
+        if  ($illdy_latest_news_descriptions_color) {
+            $css .= '#latest-news .section-header .section-description {color: '.$illdy_latest_news_descriptions_color.';}';
+        }
+        
+        return $css;
+    }
 }
 
-add_filter( 'get_search_form', 'shapely_search_form', 100 );
+if ( !function_exists( 'illdy_fullwidth_css' ) ) {
+    function illdy_fullwidth_css(){
 
+        $illdy_full_width_title_color = sanitize_hex_color(get_theme_mod('illdy_full_width_title_color'));
+        $illdy_full_width_descriptions_color = sanitize_hex_color(get_theme_mod('illdy_full_width_descriptions_color'));
+        $illdy_full_width_full_text = sanitize_hex_color(get_theme_mod('illdy_full_width_full_text'));
+        $illdy_full_width_general_color = sanitize_hex_color(get_theme_mod('illdy_full_width_general_color', ''));
+        $illdy_full_width_general_image = esc_url(get_theme_mod('illdy_full_width_general_image'));
+        $illdy_full_width_background_size = esc_html(get_theme_mod('illdy_full_width_background_size'));
+        $illdy_full_width_background_repeat = esc_html(get_theme_mod('illdy_full_width_background_repeat'));
+        $illdy_full_width_background_attachment = esc_html(get_theme_mod('illdy_full_width_background_attachment'));
+        $illdy_full_width_background_position_y = esc_html(get_theme_mod('illdy_full_width_background_position_y'));
+        $illdy_full_width_background_position_x = esc_html(get_theme_mod('illdy_full_width_background_position_x'));
 
-/*
- * Author bio on single page
- */
-if ( ! function_exists( 'shapely_author_bio' ) ) {
-
-	function shapely_author_bio() {
-
-		if ( ! get_the_ID() ) {
-			return;
-		}
-
-		$author_displayname = get_the_author_meta( 'display_name' );
-		$author_nickname    = get_the_author_meta( 'nickname' );
-		$author_fullname    = ( get_the_author_meta( 'first_name' ) != "" && get_the_author_meta( 'last_name' ) != "" ) ? get_the_author_meta( 'first_name' ) . " " . get_the_author_meta( 'last_name' ) : "";
-		$author_email       = get_the_author_meta( 'email' );
-		$author_description = get_the_author_meta( 'description' );
-		$author_name = ( trim( $author_nickname ) != "" ) ? $author_nickname : ( trim( $author_displayname ) != "" ) ? $author_displayname : $author_fullname ?>
-
-		<div class="author-bio">
-			<div class="row">
-				<div class="col-sm-2">
-					<div class="avatar">
-						<?php echo get_avatar( get_the_author_meta( 'ID' ), 100 ); ?>
-					</div>
-				</div>
-				<div class="col-sm-10">
-					<b class="fn"><?php echo esc_html( $author_name ); ?></b>
-					<p><?php
-						if ( trim( $author_description ) != "" ) {
-							echo esc_html( $author_description );
-						} ?>
-					</p>
-					<a class="author-email"
-					   href="mailto:<?php echo esc_attr( antispambot( $author_email ) ); ?>"><?php echo esc_html( antispambot( $author_email ) ); ?></a>
-					<ul class="list-inline social-list author-social">
-						<?php
-						$twitter_profile = get_the_author_meta( 'twitter' );
-						if ( $twitter_profile && $twitter_profile != '' ) { ?>
-							<li>
-							<a href="<?php echo esc_url( $twitter_profile ); ?>">
-								<i class="fa fa-twitter"></i>
-							</a>
-							</li><?php
-						}
-
-						$fb_profile = get_the_author_meta( 'facebook' );
-						if ( $fb_profile && $fb_profile != '' ) { ?>
-							<li>
-							<a href="<?php echo esc_url( $fb_profile ); ?>">
-								<i class="fa fa-facebook"></i>
-							</a>
-							</li><?php
-						}
-
-						$dribble_profile = get_the_author_meta( 'dribble' );
-						if ( $dribble_profile && $dribble_profile != '' ) { ?>
-							<li>
-								<a href="<?php echo esc_url( $dribble_profile ); ?>">
-									<i class="fa fa-dribbble"></i>
-								</a>
-							</li>
-							<?php
-						}
-
-						$github_profile = get_the_author_meta( 'github' );
-						if ( $github_profile && $github_profile != '' ) { ?>
-							<li>
-							<a href="<?php echo esc_url( $github_profile ); ?>">
-								<i class="fa fa-vimeo"></i>
-							</a>
-							</li><?php
-						}
-
-						$vimeo_profile = get_the_author_meta( 'vimeo' );
-						if ( $vimeo_profile && $vimeo_profile != '' ) { ?>
-							<li>
-							<a href="<?php echo esc_url( $vimeo_profile ); ?>">
-								<i class="fa fa-github"></i>
-							</a>
-							</li><?php
-						} ?>
-					</ul>
-				</div>
-			</div>
-		</div>
-		<!--end of author-bio-->
-		<?php
-
-	}
-}
-if ( ! function_exists( 'shapely_author_bio' ) ) {
-
-	function shapely_author_bio() {
-
-		if ( ! get_the_ID() ) {
-			return;
-		}
-
-		$author_displayname = get_the_author_meta( 'display_name' );
-		$author_nickname    = get_the_author_meta( 'nickname' );
-		$author_fullname    = ( get_the_author_meta( 'first_name' ) != "" && get_the_author_meta( 'last_name' ) != "" ) ? get_the_author_meta( 'first_name' ) . " " . get_the_author_meta( 'last_name' ) : "";
-		$author_email       = get_the_author_meta( 'email' );
-		$author_description = get_the_author_meta( 'description' );
-		$author_name = ( trim( $author_nickname ) != "" ) ? $author_nickname : ( trim( $author_displayname ) != "" ) ? $author_displayname : $author_fullname ?>
-
-		<div class="author-bio">
-			<div class="row">
-				<div class="col-sm-2">
-					<div class="avatar">
-						<?php echo get_avatar( get_the_author_meta( 'ID' ), 100 ); ?>
-					</div>
-				</div>
-				<div class="col-sm-10">
-					<b class="fn"><?php echo esc_html( $author_name ); ?></b>
-					<p><?php
-						if ( trim( $author_description ) != "" ) {
-							echo esc_html( $author_description );
-						} ?>
-					</p>
-					<a class="author-email"
-					   href="mailto:<?php echo esc_attr( antispambot( $author_email ) ); ?>"><?php echo esc_html( antispambot( $author_email ) ); ?></a>
-					<ul class="list-inline social-list author-social">
-						<?php
-						$twitter_profile = get_the_author_meta( 'twitter' );
-						if ( $twitter_profile && $twitter_profile != '' ) { ?>
-							<li>
-							<a href="<?php echo esc_url( $twitter_profile ); ?>">
-								<i class="fa fa-twitter"></i>
-							</a>
-							</li><?php
-						}
-
-						$fb_profile = get_the_author_meta( 'facebook' );
-						if ( $fb_profile && $fb_profile != '' ) { ?>
-							<li>
-							<a href="<?php echo esc_url( $fb_profile ); ?>">
-								<i class="fa fa-facebook"></i>
-							</a>
-							</li><?php
-						}
-
-						$dribble_profile = get_the_author_meta( 'dribble' );
-						if ( $dribble_profile && $dribble_profile != '' ) { ?>
-							<li>
-								<a href="<?php echo esc_url( $dribble_profile ); ?>">
-									<i class="fa fa-dribbble"></i>
-								</a>
-							</li>
-							<?php
-						}
-
-						$github_profile = get_the_author_meta( 'github' );
-						if ( $github_profile && $github_profile != '' ) { ?>
-							<li>
-							<a href="<?php echo esc_url( $github_profile ); ?>">
-								<i class="fa fa-vimeo"></i>
-							</a>
-							</li><?php
-						}
-
-						$vimeo_profile = get_the_author_meta( 'vimeo' );
-						if ( $vimeo_profile && $vimeo_profile != '' ) { ?>
-							<li>
-							<a href="<?php echo esc_url( $vimeo_profile ); ?>">
-								<i class="fa fa-github"></i>
-							</a>
-							</li><?php
-						} ?>
-					</ul>
-				</div>
-			</div>
-		</div>
-		<!--end of author-bio-->
-		<?php
-
-	}
-}
-/**
- * Custom comment template
- */
-function shapely_cb_comment( $comment, $args, $depth ) {
-	$GLOBALS['comment'] = $comment;
-	extract( $args, EXTR_SKIP );
-
-	if ( 'ul' == $args['style'] ) {
-		$tag       = 'ul';
-		$add_below = 'comment';
-	} else {
-		$tag       = 'li';
-		$add_below = 'div-comment';
-	}
-	?>
-	<li <?php comment_class( empty( $args['has_children'] ) ? '' : 'parent' ) ?> id="comment-<?php comment_ID() ?>">
-		<?php if ( 'div' != $args['style'] ) : ?>
-		<div id="div-comment-<?php comment_ID() ?>" class="comment-body">
-			<?php endif; ?>
-			<div class="avatar">
-				<?php if ( $args['avatar_size'] != 0 ) {
-					echo get_avatar( $comment, $args['avatar_size'] );
-				} ?>
-			</div>
-			<div class="comment">
-				<b class="fn"><?php echo esc_html( get_comment_author() ); ?></b>
-				<div class="comment-date">
-					<time datetime="2016-01-28T12:43:17+00:00">
-						<?php
-						/* translators: 1: date, 2: time */
-						printf( __( '%1$s at %2$s', 'shapely' ), get_comment_date(), get_comment_time() ); ?></time><?php edit_comment_link( esc_html__( 'Edit', 'shapely' ), '  ', '' );
-					?>
-				</div>
-
-				<?php comment_reply_link( array_merge( $args, array(
-					'add_below' => $add_below,
-					'depth'     => $depth,
-					'max_depth' => $args['max_depth']
-				) ) ); ?>
-
-				<?php if ( $comment->comment_approved == '0' ) : ?>
-					<p>
-						<em class="comment-awaiting-moderation"><?php esc_html_e( 'Your comment is awaiting moderation.', 'shapely' ); ?></em>
-						<br/>
-					</p>
-				<?php endif; ?>
-
-				<?php comment_text(); ?>
-
-			</div>
-			<?php if ( 'div' != $args['style'] ) : ?>
-		</div>
-	<?php endif; ?>
-	</li>
-	<?php
+        $css = '';
+        if ($illdy_full_width_general_image) {
+            $css .= '#full-width {background-image: url('.$illdy_full_width_general_image.') !important;}';
+        }
+        if ( $illdy_full_width_background_position_y ) {
+            $css .= '#full-width {background-position-y: '.$illdy_full_width_background_position_y.';}';
+        }
+        if ( $illdy_full_width_background_position_x ) {
+            $css .= '#full-width {background-position-x: '.$illdy_full_width_background_position_x.';}';
+        }
+        if ($illdy_full_width_background_size) {
+            $css .= '#full-width {background-size: '.$illdy_full_width_background_size.' !important;}';
+        }
+        if ($illdy_full_width_background_repeat) {
+            $css .= '#full-width {background-repeat: repeat !important;}';
+        }
+        if ($illdy_full_width_background_attachment) {
+            $css .= '#full-width {background-attachment: scroll !important;}';
+        }
+        if ($illdy_full_width_general_color) {
+            $css .= '#full-width {background-color: '.$illdy_full_width_general_color.';}';
+        }
+        if  ($illdy_full_width_title_color) {
+            $css .= '#full-width .section-header h3 {color: '.$illdy_full_width_title_color.';}';
+        }
+        if  ($illdy_full_width_descriptions_color) {
+            $css .= '#full-width .section-header .section-description {color: '.$illdy_full_width_descriptions_color.';}';
+        }
+        if  ($illdy_full_width_descriptions_color) {
+            $css .= '#full-width .top-parallax-section h1, #full-width .top-parallax-section p {color: '.$illdy_full_width_full_text.';}';
+        }
+        
+        return $css;
+    }
 }
 
-/*
- * Filter to replace
- * Reply button class
- */
-function shapely_reply_link_class( $class ) {
-	$class = str_replace( "class='comment-reply-link", "class='btn btn-sm comment-reply", $class );
+if ( !function_exists( 'illdy_about_css' ) ) {
+    function illdy_about_css(){
 
-	return $class;
+        $illdy_about_title_color = sanitize_hex_color(get_theme_mod('illdy_about_title_color'));
+        $illdy_about_descriptions_color = sanitize_hex_color(get_theme_mod('illdy_about_descriptions_color'));
+        $illdy_about_general_color = sanitize_hex_color(get_theme_mod('illdy_about_general_color'));
+        $illdy_about_general_image = esc_url(get_theme_mod('illdy_about_general_image'));
+        $illdy_about_background_size = esc_html(get_theme_mod('illdy_about_background_size'));
+        $illdy_about_background_repeat = esc_html(get_theme_mod('illdy_about_background_repeat'));
+        $illdy_about_background_attachment = esc_html(get_theme_mod('illdy_about_background_attachment'));
+        $illdy_about_background_position_y = esc_html(get_theme_mod('illdy_about_background_position_y'));
+        $illdy_about_background_position_x = esc_html(get_theme_mod('illdy_about_background_position_x'));
+
+        $css = '';
+        if ($illdy_about_general_image) {
+            $css .= '#about {background-image: url('.$illdy_about_general_image.') !important;}';
+        }
+        if ( $illdy_about_background_position_y ) {
+            $css .= '#about {background-position-y: '.$illdy_about_background_position_y.';}';
+        }
+        if ( $illdy_about_background_position_x ) {
+            $css .= '#about {background-position-x: '.$illdy_about_background_position_x.';}';
+        }
+        if ($illdy_about_background_size) {
+            $css .= '#about {background-size: '.$illdy_about_background_size.' !important;}';
+        }
+        if ($illdy_about_background_repeat) {
+            $css .= '#about {background-repeat: repeat !important;}';
+        }
+        if ($illdy_about_background_attachment) {
+            $css .= '#about {background-attachment: scroll !important;}';
+        }
+        if ($illdy_about_general_color) {
+            $css .= '#about {background-color: '.$illdy_about_general_color.';}';
+        }
+        if  ($illdy_about_title_color) {
+            $css .= '#about .section-header h3 {color: '.$illdy_about_title_color.';}';
+        }
+        if  ($illdy_about_descriptions_color) {
+            $css .= '#about .section-header .section-description {color: '.$illdy_about_descriptions_color.';}';
+        }
+        
+        return $css;
+    }
 }
 
-/*
- * Comment form template
- */
-function shapely_custom_comment_form() {
-	$commenter = wp_get_current_commenter();
-	$req       = get_option( 'require_name_email' );
-	$aria_req  = ( $req ? " aria-required='true'" : '' );
-	$fields    = array(
-		'author' =>
-			'<input id="author" placeholder="' . esc_html__( 'Your Name', 'shapely' ) . ( $req ? '*' : '' ) . '" name="author" type="text" value="' . esc_attr( $commenter['comment_author'] ) .
-			'" size="30" ' . $aria_req . ' required="required" />',
+if ( !function_exists( 'illdy_projects_css' ) ) {
+    function illdy_projects_css(){
 
-		'email' =>
-			'<input id="email" name="email" type="email" placeholder="' . esc_html__( 'Email Address', 'shapely' ) . ( $req ? '*' : '' ) . '" value="' . esc_attr( $commenter['comment_author_email'] ) .
-			'" size="30"' . $aria_req . ' required="required" />',
+        $illdy_projects_title_color = sanitize_hex_color(get_theme_mod('illdy_projects_title_color'));
+        $illdy_projects_descriptions_color = sanitize_hex_color(get_theme_mod('illdy_projects_descriptions_color'));
+        $illdy_projects_general_color = sanitize_hex_color(get_theme_mod('illdy_projects_general_color'));
+        $illdy_projects_general_image = esc_url(get_theme_mod('illdy_projects_general_image', get_template_directory_uri() . '/layout/images/front-page/pattern.png'));
+        $illdy_projects_background_size = esc_html(get_theme_mod('illdy_projects_background_size','auto'));
+        $illdy_projects_background_repeat = esc_html(get_theme_mod('illdy_projects_background_repeat',1));
+        $illdy_projects_background_attachment = esc_html(get_theme_mod('illdy_projects_background_attachment'));
+        $illdy_projects_background_position_y = esc_html(get_theme_mod('illdy_projects_background_position_y'));
+        $illdy_projects_background_position_x = esc_html(get_theme_mod('illdy_projects_background_position_x'));
 
-		'url' =>
-			'<input placeholder="' . esc_html__( 'Your Website (optional)', 'shapely' ) . '" id="url" name="url" type="text" value="' . esc_attr( $commenter['comment_author_url'] ) .
-			'" size="30" />',
-	);
-
-	$comments_args = array(
-		'label_submit'  => esc_html__( 'Leave Comment', 'shapely' ),
-		'comment_field' => '<textarea placeholder="' . _x( 'Comment', 'noun', 'shapely' ) . '" id="comment" name="comment" cols="45" rows="8" aria-required="true" required="required">' .
-		                   '</textarea>',
-		'fields'        => apply_filters( 'comment_form_default_fields', $fields )
-	);
-
-
-	return $comments_args;
+        $css = '';
+        if ($illdy_projects_general_image) {
+            $css .= '#projects {background-image: url('.$illdy_projects_general_image.') !important;}';
+        }
+        if ( $illdy_projects_background_position_y ) {
+            $css .= '#projects {background-position-y: '.$illdy_projects_background_position_y.';}';
+        }
+        if ( $illdy_projects_background_position_x ) {
+            $css .= '#projects {background-position-x: '.$illdy_projects_background_position_x.';}';
+        }
+        if ($illdy_projects_background_size) {
+            $css .= '#projects {background-size: '.$illdy_projects_background_size.' !important;}';
+        }
+        if ($illdy_projects_background_repeat) {
+            $css .= '#projects {background-repeat: repeat !important;}';
+        }
+        if ($illdy_projects_background_attachment) {
+            $css .= '#projects {background-attachment: scroll !important;}';
+        }
+        if ($illdy_projects_general_color) {
+            $css .= '#projects {background-color: '.$illdy_projects_general_color.';}';
+        }
+        if  ($illdy_projects_title_color) {
+            $css .= '#projects .section-header h3 {color: '.$illdy_projects_title_color.';}';
+        }
+        if  ($illdy_projects_descriptions_color) {
+            $css .= '#projects .section-header .section-description {color: '.$illdy_projects_descriptions_color.';}';
+        }
+        
+        return $css;
+    }
 }
 
-/*
- * Header Logo
- */
-function shapely_get_header_logo() {
-	$logo_id = get_theme_mod( 'custom_logo', '' );
-	$logo    = wp_get_attachment_image_src( $logo_id, 'full' ); ?>
+if ( !function_exists( 'illdy_services_css' ) ) {
+    function illdy_services_css(){
 
-	<a href="<?php echo esc_url( home_url( '/' ) ); ?>"><?php
-	if ( $logo[0] != '' ) { ?>
-		<img src="<?php echo esc_url( $logo[0] ); ?>" class="logo"
-		     alt="<?php echo esc_html( get_bloginfo( 'name' ) ); ?>"><?php
-	} else { ?>
-		<span class="site-title"><?php echo esc_html( get_bloginfo( 'name' ) ); ?></span><?php
-	} ?>
-	</a><?php
+        $illdy_services_title_color = sanitize_hex_color(get_theme_mod('illdy_services_title_color'));
+        $illdy_services_descriptions_color = sanitize_hex_color(get_theme_mod('illdy_services_descriptions_color'));
+        $illdy_services_general_color = sanitize_hex_color(get_theme_mod('illdy_services_general_color'));
+        $illdy_services_general_image = esc_url(get_theme_mod('illdy_services_general_image'));
+        $illdy_services_background_size = esc_html(get_theme_mod('illdy_services_background_size'));
+        $illdy_services_background_repeat = esc_html(get_theme_mod('illdy_services_background_repeat'));
+        $illdy_services_background_attachment = esc_html(get_theme_mod('illdy_services_background_attachment'));
+        $illdy_services_background_position_y = esc_html(get_theme_mod('illdy_services_background_position_y'));
+        $illdy_services_background_position_x = esc_html(get_theme_mod('illdy_services_background_position_x'));
+
+        $css = '';
+        if ($illdy_services_general_image) {
+            $css .= '#services {background-image: url('.$illdy_services_general_image.') !important;}';
+        }
+        if ( $illdy_services_background_position_y ) {
+            $css .= '#services {background-position-y: '.$illdy_services_background_position_y.';}';
+        }
+        if ( $illdy_services_background_position_x ) {
+            $css .= '#services {background-position-x: '.$illdy_services_background_position_x.';}';
+        }
+        if ($illdy_services_background_size) {
+            $css .= '#services {background-size: '.$illdy_services_background_size.' !important;}';
+        }
+        if ($illdy_services_background_repeat) {
+            $css .= '#services {background-repeat: repeat !important;}';
+        }
+        if ($illdy_services_background_attachment) {
+            $css .= '#services {background-attachment: scroll !important;}';
+        }
+        if ($illdy_services_general_color) {
+            $css .= '#services {background-color: '.$illdy_services_general_color.';}';
+        }
+        if  ($illdy_services_title_color) {
+            $css .= '#services .section-header h3 {color: '.$illdy_services_title_color.';}';
+        }
+        if  ($illdy_services_descriptions_color) {
+            $css .= '#services .section-header .section-description {color: '.$illdy_services_descriptions_color.';}';
+        }
+        
+        return $css;
+    }
 }
 
-/*
- * Get layout class from single page
- * then from themeoptions
- */
-function shapely_get_layout_class() {
-	if ( is_singular() ) {
-		$template     = get_page_template_slug();
-		$layout_class = '';
-		switch ( $template ) {
-			case 'page-templates/full-width.php':
-				$layout_class = 'full-width';
-				break;
-			case 'page-templates/no-sidebar.php':
-				$layout_class = 'no-sidebar';
-				break;
-			case 'page-templates/sidebar-left.php':
-				$layout_class = 'sidebar-left';
-				break;
-			case 'page-templates/sidebar-right.php':
-				$layout_class = 'sidebar-right';
-				break;
-			default:
-				$layout_class = 'sidebar-right';
-				break;
-		}
-	} else {
-		$layout_class = get_theme_mod( 'blog_layout_template', 'sidebar-right' );
-	}
+if ( !function_exists( 'illdy_team_css' ) ) {
+    function illdy_team_css(){
 
-	return $layout_class;
+        $illdy_team_title_color = sanitize_hex_color(get_theme_mod('illdy_team_title_color'));
+        $illdy_team_descriptions_color = sanitize_hex_color(get_theme_mod('illdy_team_descriptions_color'));
+        $illdy_team_general_color = sanitize_hex_color(get_theme_mod('illdy_team_general_color'));
+        $illdy_team_general_image = esc_url(get_theme_mod('illdy_team_general_image',get_template_directory_uri() . '/layout/images/front-page/pattern.png'));
+        $illdy_team_background_size = esc_html(get_theme_mod('illdy_team_background_size','auto'));
+        $illdy_team_background_repeat = esc_html(get_theme_mod('illdy_team_background_repeat',1));
+        $illdy_team_background_attachment = esc_html(get_theme_mod('illdy_team_background_attachment'));
+        $illdy_team_background_position_y = esc_html(get_theme_mod('illdy_team_background_position_y'));
+        $illdy_team_background_position_x = esc_html(get_theme_mod('illdy_team_background_position_x'));
+
+        $css = '';
+        if ($illdy_team_general_image) {
+            $css .= '#team {background-image: url('.$illdy_team_general_image.') !important;}';
+        }
+        if ( $illdy_team_background_position_y ) {
+            $css .= '#team {background-position-y: '.$illdy_team_background_position_y.';}';
+        }
+        if ( $illdy_team_background_position_x ) {
+            $css .= '#team {background-position-x: '.$illdy_team_background_position_x.';}';
+        }
+        if ($illdy_team_background_size) {
+            $css .= '#team {background-size: '.$illdy_team_background_size.' !important;}';
+        }
+        if ($illdy_team_background_repeat) {
+            $css .= '#team {background-repeat: repeat !important;}';
+        }
+        if ($illdy_team_background_attachment) {
+            $css .= '#team {background-attachment: scroll !important;}';
+        }
+        if ($illdy_team_general_color) {
+            $css .= '#team {background-color: '.$illdy_team_general_color.';}';
+        }
+        if  ($illdy_team_title_color) {
+            $css .= '#team .section-header h3 {color: '.$illdy_team_title_color.';}';
+        }
+        if  ($illdy_team_descriptions_color) {
+            $css .= '#team .section-header .section-description {color: '.$illdy_team_descriptions_color.';}';
+        }
+        
+        return $css;
+    }
 }
 
-/*
- * Show Sidebar or not
- */
-function shapely_show_sidebar() {
-	global $post;
-	$show_sidebar = true;
-	if ( is_singular() && ( get_post_meta( $post->ID, 'site_layout', true ) ) ) {
-		if ( get_post_meta( $post->ID, 'site_layout', true ) == 'no-sidebar' || get_post_meta( $post->ID, 'site_layout', true ) == 'full-width' ) {
-			$show_sidebar = false;
-		}
-	} elseif ( get_theme_mod( 'shapely_sidebar_position' ) == "no-sidebar" || get_theme_mod( 'shapely_sidebar_position' ) == "full-width" ) {
-		$show_sidebar = false;
-	}
+if ( !function_exists( 'illdy_testimonials_css' ) ) {
+    function illdy_testimonials_css(){
 
-	return $show_sidebar;
+        $illdy_testimonials_title_color = sanitize_hex_color(get_theme_mod('illdy_testimonials_title_color'));
+        $illdy_testimonials_general_color = sanitize_hex_color(get_theme_mod('illdy_testimonials_general_color'));
+        $illdy_testimonials_general_background_image = esc_url(get_theme_mod('illdy_testimonials_general_background_image', get_template_directory_uri() . '/layout/images/testiomnials-background.jpg' ));
+        $illdy_testimonials_background_size = esc_html(get_theme_mod('illdy_testimonials_background_size'));
+        $illdy_testimonials_background_repeat = esc_html(get_theme_mod('illdy_testimonials_background_repeat'));
+        $illdy_testimonials_background_attachment = esc_html(get_theme_mod('illdy_testimonials_background_attachment'));
+
+        $illdy_testimonials_author_text_color = sanitize_hex_color(get_theme_mod('illdy_testimonials_author_text_color'));
+        $illdy_testimonials_text_color = sanitize_hex_color(get_theme_mod('illdy_testimonials_text_color'));
+        $illdy_testimonials_container_background_color = sanitize_hex_color(get_theme_mod('illdy_testimonials_container_background_color'));
+        $illdy_testimonials_dots_color = sanitize_hex_color(get_theme_mod('illdy_testimonials_dots_color'));
+
+        $illdy_testimonials_background_position_y = esc_html(get_theme_mod('illdy_testimonials_background_position_y'));
+        $illdy_testimonials_background_position_x = esc_html(get_theme_mod('illdy_testimonials_background_position_x'));
+
+        $css = '';
+        if ($illdy_testimonials_general_background_image) {
+            $css .= '#testimonials {background-image: url('.$illdy_testimonials_general_background_image.') !important;}';
+        }
+        if ( $illdy_testimonials_background_position_y ) {
+            $css .= '#testimonials {background-position-y: '.$illdy_testimonials_background_position_y.';}';
+        }
+        if ( $illdy_testimonials_background_position_x ) {
+            $css .= '#testimonials {background-position-x: '.$illdy_testimonials_background_position_x.';}';
+        }
+        if ($illdy_testimonials_background_size) {
+            $css .= '#testimonials {background-size: '.$illdy_testimonials_background_size.' !important;}';
+        }
+        if ($illdy_testimonials_background_repeat) {
+            $css .= '#testimonials {background-repeat: repeat !important;}';
+        }
+        if ($illdy_testimonials_background_attachment) {
+            $css .= '#testimonials {background-attachment: scroll !important;}';
+        }
+        if ($illdy_testimonials_general_color) {
+            $css .= '#testimonials {background-color: '.$illdy_testimonials_general_color.';}';
+        }
+        if  ($illdy_testimonials_title_color) {
+            $css .= '#testimonials .section-header h3 {color: '.$illdy_testimonials_title_color.';}';
+        }
+        if  ($illdy_testimonials_author_text_color) {
+            $css .= '#testimonials .section-content .testimonials-carousel .carousel-testimonial .testimonial-meta {color: '.$illdy_testimonials_author_text_color.';}';
+        }
+         if  ($illdy_testimonials_text_color) {
+            $css .= '#testimonials .section-content .testimonials-carousel .carousel-testimonial .testimonial-content blockquote {color: '.$illdy_testimonials_text_color.';}';
+        }
+         if  ($illdy_testimonials_container_background_color) {
+            $css .= '#testimonials .section-content .testimonials-carousel .carousel-testimonial .testimonial-content {background-color: '.$illdy_testimonials_container_background_color.';}';
+            $css .= '#testimonials .section-content .testimonials-carousel .carousel-testimonial .testimonial-content:after {border-color: '.$illdy_testimonials_container_background_color.' transparent transparent transparent;}';
+        }
+         if  ($illdy_testimonials_dots_color) {
+            $css .= '#testimonials .section-content .testimonials-carousel .owl-controls .owl-dots .owl-dot:hover, #testimonials .section-content .testimonials-carousel .owl-controls .owl-dots .owl-dot.active {border-color: '.$illdy_testimonials_dots_color.';}';
+            $css .= '#testimonials .section-content .testimonials-carousel .owl-controls .owl-dots .owl-dot {background-color: '.$illdy_testimonials_dots_color.';}';
+        }
+        
+        return $css;
+    }
 }
 
-/*
- * Top Callout
- */
-function shapely_top_callout() {
-	if ( get_theme_mod( 'top_callout', true ) ) {
-		$header = get_header_image();
-		?>
-	<section
-		class="page-title-section bg-secondary <?php echo $header ? 'header-image-bg' : '' ?>" <?php echo $header ? 'style="background-image:url(' . $header . ')"' : '' ?>>
-		<div class="container">
-			<div class="row">
-				<?php
-				$breadcrumbs_enabled = false;
-				$title_in_post       = true;
-				if ( function_exists( 'yoast_breadcrumb' ) ) {
-					$options             = get_option( 'wpseo_internallinks' );
-					$breadcrumbs_enabled = ( $options['breadcrumbs-enable'] === true );
-					$title_in_post       = get_theme_mod( 'hide_post_title', false );
-				}
-				$header_color = get_theme_mod( 'header_textcolor', false );
-				?>
-				<?php if ( $title_in_post ): ?>
-					<div
-						class="<?php echo $breadcrumbs_enabled ? 'col-md-6 col-sm-6 col-xs-12' : 'col-xs-12'; ?>">
-						<h3 class="page-title" <?php echo $header_color ? 'style="color:#' . esc_attr( $header_color ) . '"' : '' ?>>
-							<?php
-							if ( is_home() ) {
-								echo esc_html( get_theme_mod( 'blog_name' ) ? get_theme_mod( 'blog_name' ) : __( 'Blog', 'shapely' ) );
-							} else if ( is_search() ) {
-								_e( 'Search', 'shapely' );
-							} else if ( is_archive() ) {
-								echo ( is_post_type_archive( 'jetpack-portfolio' ) ) ? esc_html__( 'Portfolio', 'shapely' ) : get_the_archive_title();
-							} else {
-								echo ( is_singular( 'jetpack-portfolio' ) ) ? esc_html__( 'Portfolio', 'shapely' ) : get_the_title();
-							} ?>
-						</h3>
-					</div>
-				<?php endif; ?>
-				<?php if ( function_exists( 'yoast_breadcrumb' ) ) { ?>
-					<?php
-					if ( $breadcrumbs_enabled ) { ?>
-						<div class="<?php echo $title_in_post ? 'col-md-6 col-sm-6' : ''; ?> col-xs-12 text-right">
-							<?php yoast_breadcrumb( '<p id="breadcrumbs">', '</p>' ); ?>
-						</div>
-					<?php } ?>
-				<?php } ?>
+if ( !function_exists( 'illdy_output_sections_css' ) ) {
 
-			</div>
-			<!--end of row-->
-		</div>
-		<!--end of container-->
-		</section><?php
-	} else { ?>
-		<?php if ( function_exists( 'yoast_breadcrumb' ) ) { ?>
-			<div class="container mt20"><?php
-			yoast_breadcrumb( '<p id="breadcrumbs">', '</p>' ); ?>
-			</div><?php
-		}
-	}
+    function illdy_output_sections_css(){ ?>
+
+        <style type="text/css" id="illdy-about-section-css"><?php echo illdy_jumbotron_css() ?></style>
+        <style type="text/css" id="illdy-latestnews-section-css"><?php echo illdy_latestnews_css() ?></style>
+        <style type="text/css" id="illdy-fullwidth-section-css"><?php echo illdy_fullwidth_css() ?></style>
+        <style type="text/css" id="illdy-about-section-css"><?php echo illdy_about_css() ?></style>
+        <style type="text/css" id="illdy-projects-section-css"><?php echo illdy_projects_css() ?></style>
+        <style type="text/css" id="illdy-services-section-css"><?php echo illdy_services_css() ?></style>
+        <style type="text/css" id="illdy-team-section-css"><?php echo illdy_team_css() ?></style>
+        <style type="text/css" id="illdy-testimonials-section-css"><?php echo illdy_testimonials_css() ?></style>
+
+    <?php
+    }
+
+    add_action( 'wp_head', 'illdy_output_sections_css', 99 );
+
 }
 
-/*
- * Footer Callout
- */
-function shapely_footer_callout() {
-	if ( get_theme_mod( 'footer_callout_text' ) != '' ) { ?>
-		<section class="cfa-section bg-secondary">
-		<div class="container">
-			<div class="row">
-				<div class="col-sm-12 text-center p0">
-					<div class="overflow-hidden">
-						<div class="col-sm-9">
-							<h3 class="cfa-text"><?php echo wp_kses_post( get_theme_mod( 'footer_callout_text' ) ); ?></h3>
-						</div>
-						<div class="col-sm-3">
-							<a href='<?php echo esc_url( get_theme_mod( 'footer_callout_link' ) ); ?>'
-							   class="mb0 btn btn-lg btn-filled cfa-button">
-								<?php echo wp_kses_post( get_theme_mod( 'footer_callout_btntext' ) ); ?>
-							</a>
-						</div>
-					</div>
-				</div>
-			</div>
-		</div>
-		</section><?php
-	}
+add_filter('body_class', 'illdy_output_customizer_class');
+
+function illdy_output_customizer_class($classes) {
+        if ( is_customize_preview() ) {
+            $classes[] = 'illdy-customizer-preview';
+        }
+        return $classes;
 }

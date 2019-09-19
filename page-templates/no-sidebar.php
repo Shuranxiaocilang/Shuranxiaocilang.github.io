@@ -1,24 +1,28 @@
 <?php
-/*
-Template Name: No Sidebar
-Template Post Type: post, page
-*/
-get_header(); ?>
+/**
+ *	Template name: No Sidebar
+ *
+ *	The template for displaying Custom Page Template: No Sidebar.
+ *
+ *	@package WordPress
+ *	@subpackage illdy
+ */
+?>
+<?php get_header(); ?>
+<div class="container">
 	<div class="row">
-		<div id="primary" class="col-md-8 mb-xs-24 no-sidebar">
-			<?php
-			while ( have_posts() ) : the_post();
-
-				get_template_part( 'template-parts/content' );
-
-				// If comments are open or we have at least one comment, load up the comment template.
-				if ( comments_open() || get_comments_number() ) :
-					comments_template();
+		<div class="col-sm-12">
+			<section id="blog">
+				<?php
+				if( have_posts() ):
+					while( have_posts() ):
+						the_post();
+						get_template_part( 'template-parts/content', 'page' );
+					endwhile;
 				endif;
-
-			endwhile; // End of the loop.
-			?>
-		</div><!-- #primary -->
-	</div>
-<?php
-get_footer();
+				?>
+			</section><!--/#blog-->
+		</div><!--/.col-sm-12-->
+	</div><!--/.row-->
+</div><!--/.container-->
+<?php get_footer(); ?>
