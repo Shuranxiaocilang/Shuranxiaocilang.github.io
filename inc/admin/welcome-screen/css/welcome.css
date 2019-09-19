@@ -5,7 +5,7 @@
 /* New Logo */
 .wp-badge.epsilon-welcome-logo {
     color: #fff;
-    background-image: url(../img/colorlib.png);
+    background-image: url(../img/colorlib-logo-white2.png);
     background-position: center center;
     background-size: 70%;
     background-repeat: no-repeat;
@@ -32,11 +32,11 @@
     color: #a00;
 }
 
-.illdy-action-required-box:last-of-type {
+.shapely-action-required-box:last-of-type {
     border-bottom: none;
 }
 
-.illdy-action-required-box {
+.shapely-action-required-box {
     display: block;
     border-left: 3px solid #f8800c;
     padding: 10px 25px 5px;
@@ -46,20 +46,20 @@
     position: relative;
 }
 
-.about-wrap .illdy-action-required-box h4 {
+.about-wrap .shapely-action-required-box h4 {
     display: block;
     margin-top: 0;
     margin-bottom: 0;
 }
 
-.about-wrap .illdy-action-required-box p {
+.about-wrap .shapely-action-required-box p {
     display: block;
     margin-top: 0;
     width: 100%;
     max-width: 100%;
 }
 
-.about-wrap .illdy-dismiss-required-action {
+.about-wrap .shapely-dismiss-required-action {
     position: absolute;
     top: 10px;
     right: 10px;
@@ -69,8 +69,7 @@
     cursor: pointer;
 }
 
-.about-wrap .illdy-required-action-button,
-.about-wrap .illdy-recommended-plugin-button {
+.about-wrap .shapely-required-action-button {
     position: absolute;
     top: 10px;
     right: 10px;
@@ -134,7 +133,7 @@
     margin: 0 auto;
     margin-bottom:15px;
     display: block;
-    border: 0 none;
+    border:none;
 }
 
 .plugin_box .action_bar {
@@ -184,6 +183,19 @@
     width: 29.81%;
 }
 
-.about-wrap.epsilon-wrap .feature-section.two-col .col {
-    margin-top: 40px;
+.shapely-media-control img {
+    width: 100%;
+}
+
+#demo_content .spinner {
+    float: none;
+}
+
+#demo_content .updated-message,
+#demo_content .spinner {
+    display: none;
+}
+
+#demo_content .spinner.is-active {
+    display: inline-block;
 }

@@ -1,82 +1,91 @@
-=== Illdy ===
+/*========= About Theme =========*/
 
-Contributors: Colorlib
-Tags: blog, e-commerce, education, entertainment, news, food-and-drink, holiday, photography, portfolio
+Theme Name: Shapely
+Theme URI: https://colorlib.com/wp/shapely/
+Version: 1.1.0
+Tested up to: WP 4.7
 
-Requires at least: 4.0
-Tested up to: 4.7.2
-Stable tag: 2.0.1
-License: GPLv2 or later
-License URI: http://www.gnu.org/licenses/gpl-2.0.html
+Author: Aigars Silkalns
+Author URI: https://colorlib.com/wp/
+License: GNU General Public License v3.0
+License URI: http://www.gnu.org/licenses/gpl.html
+-------------------------------------------------------
+Shapely theme, Copyright 2017 colorlib.com
+Shapely WordPress theme is distributed under the terms of the GNU GPL
+Shapely is based on Underscores http://underscores.me/, (C) 2012-2017 Automattic, Inc.
+-------------------------------------------------------
 
 == Description ==
 
-Illdy is a free premium one page WordPress theme.
+Shapely is a powerful and versatile one page WordPress theme with pixel perfect design and outstanding functionality. It is by far the most advanced free WordPress theme available today with loads of unmatched customization options. This theme comes with several homepage widgets that can be used to add portfolio, testimonials, parallax sections, your product or service information, call for action and much more.
+
+Shapely supports most free and premium WordPress plugins such as WooCommerce, Jetpack, Gravity Forms, Contact Form 7, Yoast SEO, Google Analytics by Yoast and much more.
+
+This theme is the best suited for business, landing page, portfolio, ecommerce, store, local business,  personal websites but can be tweaked to be used as blog, magazine or any other awesome website while highlighting its unique one page setup. This is going to be the last WordPress theme you will ever want to use because it is so much better than anything you have seen. We promise.
 
 == Installation ==
-	
+
 1. In your admin panel, go to Appearance > Themes and click the Add New button.
 2. Click Upload and Choose File, then select the theme's .zip file. Click Install Now.
 3. Click Activate to use your new theme right away.
 
-= License =
-Illdy WordPress theme, Copyright (C) 2015 Colorlib.com
-Illdy WordPress theme is licensed under the GPL3.
+For more detailed Shapely theme setup please read documentation: https://colorlib.com/wp/support/shapely/
 
-Unless otherwise specified, all the theme files, scripts and images are licensed under GNU General Public License.
-The exceptions to this license are as follows:
+== Frequently Asked Questions ==
 
-* Bootstrap v3.3.6 (http://getbootstrap.com):
-    Copyright 2011-2014 Twitter, Inc.
-    Licensed under MIT (https://github.com/twbs/bootstrap/blob/master/LICENSE)
+= Does this theme support any plugins? =
 
-* Images:
-	All images are from Unsplash (	www.unsplash.com	) and Pixabay( www.pixabay.com	)
-	License under Creative Commons Zero.
+Shapely includes support for Infinite Scroll, Portfolio, Testimonials, Tiled Galleries for Jetpack.
+
+= Long menus =
+
+Shapely theme does not support long menus.
+
+= Front page template not displaying content =
+
+This page template is used to create the Parallax homepage from our demo : https://colorlib.com/shapely/ . it does not output any content added in the backend editor and we recommend using only the [Shapely] tagged widgets. 
+
+== Credits ==
+
+* Based on Underscores http://underscores.me/, (C) 2012-2017 Automattic, Inc., [GPLv2 or later](https://www.gnu.org/licenses/gpl-2.0.html)
+* normalize.css http://necolas.github.io/normalize.css/, (C) 2012-2017 Nicolas Gallagher and Jonathan Neal, [MIT](http://opensource.org/licenses/MIT)
+* TGM Plugin Activation - http://tgmpluginactivation.com/, 2011, Thomas Griffin [GPLv2 or later](https://www.gnu.org/licenses/gpl-2.0.html)
+* Bootstrap v3.3.6 (http://getbootstrap.com), Copyright 2011-2014 Twitter, Inc. Licensed under MIT (https://github.com/twbs/bootstrap/blob/master/LICENSE)
+* Font Awesome 4.5.0 by @davegandy - http://fontawesome.io - @fontawesome
+	License - http://fontawesome.io/license (Font: SIL OFL 1.1, CSS: MIT License)
+* WP-Bootstrap-NavWalker licensed under the GPLv2 license (http://www.gnu.org/licenses/gpl-2.0.html)
+* FlexSlider by WooThemes licensed under the GPLv2 license (http://www.gnu.org/licenses/gpl-2.0.html)
+* jQuery Smooth Scroll, https://github.com/kswedberg/jquery-smooth-scroll. Copyright (c) 2015 Karl Swedberg. Licensed MIT(https://github.com/kswedberg/jquery-smooth-scroll/blob/master/LICENSE-MIT)
+* jQuery Cloneya, Lisensed under [MIT](http://opensource.org/licenses/MIT)
 
 
-	https://pixabay.com/en/bed-bedroom-door-girl-house-1850893/
+== Changelog ==
 
+= 1.1.0 - Jan 3 2017 =
 
-	Sources for images used:
-		https://unsplash.com/photos/VviFtDJakYk
-		https://unsplash.com/photos/hoCXpPUMCoE
-		https://pixabay.com/en/coffee­tablet­headphones­work­1128140/
-		https://unsplash.com/photos/T0bQdp74I0U
-		https://unsplash.com/photos/VLT62­JzddA
-		https://pixabay.com/en/turntable­top­view­audio­equipment­1109588/
-		https://pixabay.com/en/computer­apple­imac­keyboard­mouse­791392/
-		https://pixabay.com/en/man­reading­touchscreen­blog­791049/
-		https://pixabay.com/en/workspace­place­of­work­work­766045/
-		https://pixabay.com/en/coffee­coffe­latte­516186/
-		https://unsplash.com/photos/zCevd81eJDU
-		https://unsplash.com/photos/2UE1givDiPM
-		https://unsplash.com/photos/lZlfHGqx44Q
-		https://unsplash.com/photos/71cd1rWqO8M
-		https://unsplash.com/photos/HALe2SmkWAI
-		https://unsplash.com/photos/hiAdjnXZxl8
-		https://unsplash.com/photos/eqsEZNCm4­c
-		https://pixabay.com/en/fashion­beauty­model­portrait­girl­1063100/
-		https://pixabay.com/en/home­office­notebook­home­couch­569153/
-		https://pixabay.com/en/adult-beach-enjoyment-1867618/
-		https://stocksnap.io/photo/7LQZXYOHL9
-		https://stocksnap.io/photo/PLFB4I53U4
-		https://stocksnap.io/photo/D3WN2GEYA3
-		https://pixabay.com/en/canine-cute-dog-footwear-hammock-1851504/
+* Major upgrade to comply with WordPress.org guidelines and best practices.
 
-* Font Awesome:
-	License: SIL OFL 1.1
-	URL: http://scripts.sil.org/OFL
+= 1.0.5 - Sept 3 2016 =
 
-* Google Fonts:
-	Source Sans Pro (https://www.google.com/fonts/specimen/Source+Sans+Pro)
-	License under SIL Open Font License, 1.1
-	Copyright © Paul D. Hunt (https://plus.google.com/108888178732927400671/about)
+* Improved theme translation
 
-* owl-carousel.js (http://www.owlcarousel.owlgraphic.com/):
-	Copyright 2013 Bartosz Wojciechowski
-	License under The MIT License (MIT)
+= 1.0.4 - Sept 3 2016 =
 
-* count-to.js (https://github.com/mhuggins/jquery-countTo):
-	Copyright Matt Huggins
-	License under MIT license.
+* Removed deprecated tags
+
+= 1.0.3 - Sept 3 2016 =
+
+* Small bug fixes and improvements
+
+= 1.0.2 - April 15 2016 =
+
+* Fixed parse error for older version of PHP.
+* Fixed error when mobile menu was appearing along regular menu between 990px - 991px.
+
+= 1.0.1 - March 30 2016 =
+
+* Renamed JavaScript file to get rid of not found error.
+* Updated Smooth Scroll to 1.7.2
+
+= 1.0.0 - March 26 2016 =
+* Initial release

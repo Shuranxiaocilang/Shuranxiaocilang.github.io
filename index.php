@@ -1,49 +1,52 @@
 <?php
 /**
- *    The template for dispalying the index.
+ * The main template file.
  *
- * @package    WordPress
- * @subpackage illdy
-
+ * This is the most generic template file in a WordPress theme
+ * and one of the two required files for a theme (the other being style.css).
+ * It is used to display a page when nothing more specific matches a query.
+ * E.g., it puts together the home page when no home.php file exists.
+ *
+ * @link    https://codex.wordpress.org/Template_Hierarchy
+ *
+ * @package Shapely
  */
-?>
-<?php get_header(); ?>
-	<div class="container">
+get_header(); ?>
+<?php $layout_class = shapely_get_layout_class();?>
 	<div class="row">
+		<?php
+		if ( $layout_class == 'sidebar-left' ):
+			get_sidebar();
+		endif;
+		?>
+		<div id="primary" class="col-md-8 mb-xs-24 <?php echo esc_attr( $layout_class ); ?>"><?php
+			if ( have_posts() ) :
 
-		<?php if ( is_active_sidebar( 'blog-sidebar' ) ) { ?>
-		<div class="col-sm-8">
-			<?php } else { ?>
-			<div class="col-sm-8 col-sm-offset-2">
-				<?php } ?>
+				if ( is_home() && ! is_front_page() ) : ?>
+					<header>
+						<h1 class="page-title screen-reader-text"><?php esc_html( single_post_title() ); ?></h1>
+					</header>
 
-				<section id="blog">
-					<?php do_action( 'illdy_above_content_after_header' ); ?>
 					<?php
-					if ( have_posts() ):
-						while ( have_posts() ):
-							the_post();
-							get_template_part( 'template-parts/content', get_post_format() );
-						endwhile;
-						wp_reset_query();
-					else:
-						get_template_part( 'template-parts/content', 'none' );
-					endif;
-					?>
-					<?php do_action( 'illdy_after_content_above_footer' ); ?>
-				</section><!--/#blog-->
-			</div><!--/.col-sm-7/12-->
+				endif;
 
-			<?php if ( is_active_sidebar( 'blog-sidebar' ) ) { ?>
-				<div class="col-sm-4">
-					<div id="sidebar">
-						<?php dynamic_sidebar( 'blog-sidebar' ); ?>
-					</div>
-				</div>
-			<?php } ?>
+				$layout_type = get_theme_mod( 'blog_layout_view', 'grid' );
 
+				get_template_part( 'template-parts/layouts/blog', $layout_type );
 
+				shapely_pagination();
 
-		</div><!--/.row-->
-	</div><!--/.container-->
-<?php get_footer(); ?>
+			else :
+
+				get_template_part( 'template-parts/content', 'none' );
+
+			endif; ?>
+		</div><!-- #primary -->
+		<?php
+		if ( $layout_class == 'sidebar-right' ):
+			get_sidebar();
+		endif;
+		?>
+	</div>
+<?php
+get_footer();

@@ -1,44 +1,37 @@
 <?php
 /**
- *    The template for dispalying the single.
+ * The template for displaying all single posts.
  *
- * @package    WordPress
- * @subpackage illdy
+ * @link    https://developer.wordpress.org/themes/basics/template-hierarchy/#single-post
+ *
+ * @package Shapely
  */
 
-global $post;
-$sidebar_enabled = get_post_meta( $post->ID, 'illdy-sidebar-enable', true );
-
-?>
-
-<?php get_header(); ?>
-	<div class="container">
+get_header(); ?>
+<?php $layout_class = shapely_get_layout_class(); ?>
 	<div class="row">
-		<?php if ( is_active_sidebar( 'blog-sidebar' ) ) { ?>
-		<div class="col-sm-8">
-			<?php } else { ?>
-			<div class="col-sm-8 col-sm-offset-2">
-				<?php } ?>
+		<?php
+		if ( $layout_class == 'sidebar-left' ):
+			get_sidebar();
+		endif;
+		?>
+		<div id="primary" class="col-md-8 mb-xs-24 <?php echo esc_attr( $layout_class ); ?>"><?php
+			while ( have_posts() ) : the_post();
 
-				<section id="blog">
-					<?php
-					if ( have_posts() ):
-						while ( have_posts() ):
-							the_post();
-							get_template_part( 'template-parts/content', 'single' );
-						endwhile;
-					endif;
-					?>
-				</section><!--/#blog-->
-			</div><!--/.col-sm-7-->
+				get_template_part( 'template-parts/content' );
 
-			<?php if ( is_active_sidebar( 'blog-sidebar' ) ) { ?>
-				<div class="col-sm-4">
-					<div id="sidebar">
-						<?php dynamic_sidebar( 'blog-sidebar' ); ?>
-					</div>
-				</div>
-			<?php } ?>
-		</div><!--/.row-->
-	</div><!--/.container-->
-<?php get_footer(); ?>
+				// If comments are open or we have at least one comment, load up the comment template.
+				if ( comments_open() || get_comments_number() ) :
+					comments_template();
+				endif;
+
+			endwhile; // End of the loop. ?>
+		</div><!-- #primary -->
+		<?php
+		if ( $layout_class == 'sidebar-right' ):
+			get_sidebar();
+		endif;
+		?>
+	</div>
+<?php
+get_footer();
